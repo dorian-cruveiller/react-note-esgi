@@ -10,6 +10,7 @@ import { Button } from "./components/Button/Button";
 function App() {
   const [isLoading, setIsLoading] = useState(true);
   const [notes, setNotes] = useState(null);
+  const [selectedNoteId, setSelectedNoteId] = useState(null);
 
   const fetchNotes = async () => {
     const response = await fetch("/notes");
@@ -39,6 +40,8 @@ function App() {
     fetchNotes();
   }, []);
 
+  console.log({ selectedNoteId });
+
   return (
     <>
       <aside className="Side">
@@ -48,7 +51,15 @@ function App() {
         {isLoading
           ? "Chargement…"
           : notes?.map((note) => (
-              <button className="Note-button" key={note.id}>
+              <button
+                className={`Note-button ${
+                  selectedNoteId === note.id ? "Note-button-selected" : ""
+                }`}
+                key={note.id}
+                onClick={() => {
+                  setSelectedNoteId(note.id);
+                }}
+              >
                 {note.title}
               </button>
             ))}

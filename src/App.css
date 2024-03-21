@@ -29,6 +29,10 @@
   font-weight: bold;
 }
 
+.Note-button-selected {
+  background: rgb(44, 51, 56);
+}
+
 .Note-button:hover {
   background: rgb(60, 60, 60);
 }
