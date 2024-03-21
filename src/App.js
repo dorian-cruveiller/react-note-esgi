@@ -19,6 +19,20 @@ function App() {
     setIsLoading(false);
   };
 
+  const createNote = () => {
+    fetch("/notes", {
+      method: "POST",
+      headers: {
+        "Content-Type": "application/json",
+      },
+      body: JSON.stringify({
+        title: "Nouvelle note",
+        content: "",
+        lastUpdatedAt: new Date(),
+      }),
+    });
+  };
+
   useEffect(() => {
     fetchNotes();
   }, []);
@@ -27,13 +41,7 @@ function App() {
     <>
       <aside className="Side">
         <div className="Create-note-wrapper">
-          <Button
-            onClick={() => {
-              console.log("clicked +");
-            }}
-          >
-            + Create new note
-          </Button>
+          <Button onClick={createNote}>+ Create new note</Button>
         </div>
         {isLoading
           ? "Chargement…"
