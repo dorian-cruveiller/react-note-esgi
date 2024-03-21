@@ -24,13 +24,18 @@ function App() {
   }, []);
 
   return (
-    <div className="App">
-      <header className="App-header">
+    <>
+      <aside className="Side">
         {isLoading
           ? "Chargement…"
-          : notes?.map((note) => <div>{note.title}</div>)}
-      </header>
-    </div>
+          : notes?.map((note) => (
+              <button className="Note-button" key={note.id}>
+                {note.title}
+              </button>
+            ))}
+      </aside>
+      <main className="Main"></main>
+    </>
   );
 }
 
