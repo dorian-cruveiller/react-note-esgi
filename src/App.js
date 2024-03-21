@@ -19,8 +19,8 @@ function App() {
     setIsLoading(false);
   };
 
-  const createNote = () => {
-    fetch("/notes", {
+  const createNote = async () => {
+    await fetch("/notes", {
       method: "POST",
       headers: {
         "Content-Type": "application/json",
@@ -31,6 +31,8 @@ function App() {
         lastUpdatedAt: new Date(),
       }),
     });
+
+    fetchNotes();
   };
 
   useEffect(() => {
