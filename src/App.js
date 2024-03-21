@@ -1,6 +1,6 @@
-import logo from "./logo.svg";
 import "./App.css";
 import { useEffect, useState } from "react";
+import { Button } from "./components/Button/Button";
 
 // Cycle de vie du composant App :
 // Initialement : `notes` vaut `null`, donc pas d'affichage dans le header
@@ -26,6 +26,15 @@ function App() {
   return (
     <>
       <aside className="Side">
+        <div className="Create-note-wrapper">
+          <Button
+            onClick={() => {
+              console.log("clicked +");
+            }}
+          >
+            + Create new note
+          </Button>
+        </div>
         {isLoading
           ? "Chargement…"
           : notes?.map((note) => (
