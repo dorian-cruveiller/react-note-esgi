@@ -13,6 +13,7 @@ function App() {
   const [isLoading, setIsLoading] = useState(true);
   const [notes, setNotes] = useState(null);
   const [selectedNoteId, setSelectedNoteId] = useState(null);
+  const [newNoteId, setNewNoteId] = useState(null); // État pour stocker l'ID de la nouvelle note
 
   const fetchNotes = async () => {
     const response = await fetch("/notes");
@@ -36,6 +37,7 @@ function App() {
     });
     const newNote = await response.json();
     setNotes([newNote, ...notes]);
+    setNewNoteId(newNote.id); // Mettre à jour l'état avec l'ID de la note nouvellement créée
   };
 
   useEffect(() => {
@@ -49,6 +51,12 @@ function App() {
       )
     );
   };
+
+  useEffect(() => {
+    if (newNoteId) {
+      setSelectedNoteId(newNoteId); // Rediriger vers la note nouvellement créée
+    }
+  }, [newNoteId]);
 
   const selectedNote =
     notes && notes.find((note) => note.id === selectedNoteId);
