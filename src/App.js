@@ -67,13 +67,16 @@ function App() {
 
   const selectedNote = notes && notes.find((note) => note.id === selectedNoteId);
 
-  // Filtrer les notes en fonction de la valeur de recherche
+  // Filtrer les notes en fonction de la valeur de recherche et trier par date de dernière mise à jour
   const filteredNotes = notes
-    ? notes.filter((note) =>
-        note.title.toLowerCase().includes(searchQuery.toLowerCase()) ||
-        note.content.toLowerCase().includes(searchQuery.toLowerCase())
+  ? notes
+      .filter(
+        (note) =>
+          note.title.toLowerCase().includes(searchQuery.toLowerCase()) ||
+          note.content.toLowerCase().includes(searchQuery.toLowerCase())
       )
-    : [];
+      .sort((a, b) => new Date(b.lastUpdatedAt) - new Date(a.lastUpdatedAt))
+  : [];
 
   return (
     <>
