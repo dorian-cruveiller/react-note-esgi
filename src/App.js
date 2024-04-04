@@ -10,12 +10,11 @@ function App() {
   const [notes, setNotes] = useState(null);
   const [selectedNoteId, setSelectedNoteId] = useState(null);
   const [newNoteId, setNewNoteId] = useState(null);
-  const [searchQuery, setSearchQuery] = useState(""); // État pour stocker la valeur de recherche
+  const [searchQuery, setSearchQuery] = useState("");
 
   const fetchNotes = async () => {
     const response = await fetch("/notes");
     const data = await response.json();
-
     setNotes(data);
     setIsLoading(false);
   };
@@ -43,7 +42,7 @@ function App() {
     });
     if (response.ok) {
       setNotes(notes.filter((note) => note.id !== id));
-      if (selectedNoteId === id) setSelectedNoteId(null); // Désélectionner la note si elle est actuellement sélectionnée
+      if (selectedNoteId === id) setSelectedNoteId(null);
     }
   };
 
@@ -67,16 +66,15 @@ function App() {
 
   const selectedNote = notes && notes.find((note) => note.id === selectedNoteId);
 
-  // Filtrer les notes en fonction de la valeur de recherche et trier par date de dernière mise à jour
   const filteredNotes = notes
-  ? notes
-      .filter(
-        (note) =>
-          note.title.toLowerCase().includes(searchQuery.toLowerCase()) ||
-          note.content.toLowerCase().includes(searchQuery.toLowerCase())
-      )
-      .sort((a, b) => new Date(b.lastUpdatedAt) - new Date(a.lastUpdatedAt))
-  : [];
+    ? notes
+        .filter(
+          (note) =>
+            note.title.toLowerCase().includes(searchQuery.toLowerCase()) ||
+            note.content.toLowerCase().includes(searchQuery.toLowerCase())
+        )
+        .sort((a, b) => new Date(b.lastUpdatedAt) - new Date(a.lastUpdatedAt))
+    : [];
 
   return (
     <>
@@ -117,12 +115,6 @@ function App() {
               >
                 {note.title}
               </button>
-              <button
-                className="Delete-button"
-                onClick={() => deleteNote(note.id)}
-              >
-                Supprimer
-              </button>
             </div>
           ))
         )}
@@ -134,6 +126,7 @@ function App() {
             title={selectedNote.title}
             content={selectedNote.content}
             onSubmit={refreshNote}
+            onDelete={deleteNote} // Passer la fonction deleteNote à la prop onDelete
           />
         ) : null}
       </main>

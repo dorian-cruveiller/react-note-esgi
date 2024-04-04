@@ -7,6 +7,7 @@ export function Note({
   title: initialTitle,
   content: initialContent,
   onSubmit,
+  onDelete, // Ajout de la fonction onDelete pour supprimer la note
 }) {
   const [title, setTitle] = useState(initialTitle);
   const [content, setContent] = useState(initialContent);
@@ -19,6 +20,7 @@ export function Note({
   }, [id, initialTitle, initialContent]);
 
   const updateNote = async () => {
+
     const response = await fetch(`/notes/${id}`, {
       method: "PUT",
       headers: {
@@ -31,10 +33,18 @@ export function Note({
       }),
     });
 
+    if (response.status === 404) {
+      return
+    }
+
     const updatedNote = await response.json();
     onSubmit(id, updatedNote);
     setIsSaved(true); // Marquer la note comme récemment enregistrée après la mise à jour
     setIsModified(false); // Réinitialiser le statut de modification après l'enregistrement
+  };
+
+  const deleteNote = async () => {
+    await onDelete(id); // Appeler la fonction onDelete avec l'ID de la note
   };
 
   return (
@@ -67,6 +77,7 @@ export function Note({
       <div className="Note-actions">
         <Button>Enregistrer</Button>
         {isSaved && <p>Enregistré</p>} {/* Afficher "Enregistré" si la note est récemment enregistrée */}
+        <Button onClick={deleteNote}>Supprimer</Button>
       </div>
     </form>
   );
