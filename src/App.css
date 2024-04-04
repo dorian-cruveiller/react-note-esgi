@@ -40,3 +40,22 @@
 .Note-button:hover {
   background: rgb(60, 60, 60);
 }
+
+.Note-button-container {
+  display: flex;
+  align-items: center;
+}
+
+.Delete-button {
+  background-color: #ff4d4f; /* Couleur de fond rouge */
+  color: #fff; /* Couleur du texte blanc */
+  border: none; /* Supprimer la bordure */
+  padding: 8px 12px; /* Ajouter un peu de rembourrage */
+  border-radius: 4px; /* Ajouter un coin arrondi */
+  cursor: pointer; /* Curseur pointer au survol */
+  transition: background-color 0.3s; /* Transition de couleur de fond en douceur */
+}
+
+.Delete-button:hover {
+  background-color: #f5222d; /* Couleur de fond rouge plus foncée au survol */
+}

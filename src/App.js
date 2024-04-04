@@ -1,3 +1,4 @@
+// App.js
 import "./App.css";
 import { useEffect, useState } from "react";
 import { Button } from "./components/Button/Button";
@@ -34,6 +35,16 @@ function App() {
     const newNote = await response.json();
     setNotes([newNote, ...notes]);
     setNewNoteId(newNote.id);
+  };
+
+  const deleteNote = async (id) => {
+    const response = await fetch(`/notes/${id}`, {
+      method: "DELETE",
+    });
+    if (response.ok) {
+      setNotes(notes.filter((note) => note.id !== id));
+      if (selectedNoteId === id) setSelectedNoteId(null); // Désélectionner la note si elle est actuellement sélectionnée
+    }
   };
 
   useEffect(() => {
@@ -92,17 +103,24 @@ function App() {
           </div>
         ) : (
           filteredNotes.map((note) => (
-            <button
-              className={`Note-button ${
-                selectedNoteId === note.id ? "Note-button-selected" : ""
-              }`}
-              key={note.id}
-              onClick={() => {
-                setSelectedNoteId(note.id);
-              }}
-            >
-              {note.title}
-            </button>
+            <div key={note.id} className="Note-button-container">
+              <button
+                className={`Note-button ${
+                  selectedNoteId === note.id ? "Note-button-selected" : ""
+                }`}
+                onClick={() => {
+                  setSelectedNoteId(note.id);
+                }}
+              >
+                {note.title}
+              </button>
+              <button
+                className="Delete-button"
+                onClick={() => deleteNote(note.id)}
+              >
+                Supprimer
+              </button>
+            </div>
           ))
         )}
       </aside>
