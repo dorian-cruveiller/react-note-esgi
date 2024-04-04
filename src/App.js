@@ -4,16 +4,12 @@ import { Button } from "./components/Button/Button";
 import { Note } from "./components/Note/Note";
 import { Loading } from "./components/Loading/Loading";
 
-// Cycle de vie du composant App :
-// Initialement : `notes` vaut `null`, donc pas d'affichage dans le header
-// Après le rendu initial : lancement de la requête au serveur (GET /notes)
-// À la réponse du serveur : `notes` devient la réponse du serveur, rafraîchissement de l'affichage
-
 function App() {
   const [isLoading, setIsLoading] = useState(true);
   const [notes, setNotes] = useState(null);
   const [selectedNoteId, setSelectedNoteId] = useState(null);
-  const [newNoteId, setNewNoteId] = useState(null); // État pour stocker l'ID de la nouvelle note
+  const [newNoteId, setNewNoteId] = useState(null);
+  const [searchQuery, setSearchQuery] = useState(""); // État pour stocker la valeur de recherche
 
   const fetchNotes = async () => {
     const response = await fetch("/notes");
@@ -37,7 +33,7 @@ function App() {
     });
     const newNote = await response.json();
     setNotes([newNote, ...notes]);
-    setNewNoteId(newNote.id); // Mettre à jour l'état avec l'ID de la note nouvellement créée
+    setNewNoteId(newNote.id);
   };
 
   useEffect(() => {
@@ -54,12 +50,19 @@ function App() {
 
   useEffect(() => {
     if (newNoteId) {
-      setSelectedNoteId(newNoteId); // Rediriger vers la note nouvellement créée
+      setSelectedNoteId(newNoteId);
     }
   }, [newNoteId]);
 
-  const selectedNote =
-    notes && notes.find((note) => note.id === selectedNoteId);
+  const selectedNote = notes && notes.find((note) => note.id === selectedNoteId);
+
+  // Filtrer les notes en fonction de la valeur de recherche
+  const filteredNotes = notes
+    ? notes.filter((note) =>
+        note.title.toLowerCase().includes(searchQuery.toLowerCase()) ||
+        note.content.toLowerCase().includes(searchQuery.toLowerCase())
+      )
+    : [];
 
   return (
     <>
@@ -67,12 +70,28 @@ function App() {
         <div className="Create-note-wrapper">
           <Button onClick={createNote}>+ Create new note</Button>
         </div>
+        <div className="Search-wrapper">
+          <input
+            type="text"
+            placeholder="Search notes"
+            value={searchQuery}
+            onChange={(e) => setSearchQuery(e.target.value)}
+          />
+          {searchQuery && (
+            <button
+              className="Clear-button"
+              onClick={() => setSearchQuery("")}
+            >
+              X
+            </button>
+          )}
+        </div>
         {isLoading ? (
           <div className="Loading-wrapper">
             <Loading />
           </div>
         ) : (
-          notes?.map((note) => (
+          filteredNotes.map((note) => (
             <button
               className={`Note-button ${
                 selectedNoteId === note.id ? "Note-button-selected" : ""
