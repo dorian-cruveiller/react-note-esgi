@@ -2,7 +2,12 @@ import { useEffect, useState } from "react";
 import { Button } from "../Button/Button";
 import "./Note.css";
 
-export function Note({ id, title: initialTitle, content: initialContent }) {
+export function Note({
+  id,
+  title: initialTitle,
+  content: initialContent,
+  onSubmit,
+}) {
   const [title, setTitle] = useState(initialTitle);
   const [content, setContent] = useState(initialContent);
 
@@ -12,7 +17,7 @@ export function Note({ id, title: initialTitle, content: initialContent }) {
   }, [id, initialTitle, initialContent]);
 
   const updateNote = async () => {
-    await fetch(`/notes/${id}`, {
+    const response = await fetch(`/notes/${id}`, {
       method: "PUT",
       headers: {
         "Content-Type": "application/json",
@@ -23,6 +28,9 @@ export function Note({ id, title: initialTitle, content: initialContent }) {
         lastUpdatedAt: new Date(),
       }),
     });
+
+    const updatedNote = await response.json();
+    onSubmit(id, updatedNote);
   };
 
   return (

@@ -41,6 +41,14 @@ function App() {
     fetchNotes();
   }, []);
 
+  const refreshNote = (id, { title, content, lastUpdatedAt }) => {
+    setNotes(
+      notes.map((note) =>
+        note.id === id ? { id, title, content, lastUpdatedAt } : note
+      )
+    );
+  };
+
   const selectedNote =
     notes && notes.find((note) => note.id === selectedNoteId);
 
@@ -72,6 +80,7 @@ function App() {
             id={selectedNote.id}
             title={selectedNote.title}
             content={selectedNote.content}
+            onSubmit={refreshNote}
           />
         ) : null}
       </main>
