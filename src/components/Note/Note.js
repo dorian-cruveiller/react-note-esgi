@@ -10,6 +10,8 @@ export function Note({
 }) {
   const [title, setTitle] = useState(initialTitle);
   const [content, setContent] = useState(initialContent);
+  const [isModified, setIsModified] = useState(false);
+  const [isSaved, setIsSaved] = useState(false); // Nouvel état pour suivre si la note a été récemment enregistrée
 
   useEffect(() => {
     setTitle(initialTitle);
@@ -31,6 +33,8 @@ export function Note({
 
     const updatedNote = await response.json();
     onSubmit(id, updatedNote);
+    setIsSaved(true); // Marquer la note comme récemment enregistrée après la mise à jour
+    setIsModified(false); // Réinitialiser le statut de modification après l'enregistrement
   };
 
   return (
@@ -47,6 +51,8 @@ export function Note({
         value={title}
         onChange={(event) => {
           setTitle(event.target.value);
+          setIsModified(true); // Marquer la note comme modifiée lors de la saisie dans le champ de titre
+          setIsSaved(false); // Réinitialiser le statut de sauvegarde lors de la modification
         }}
       />
       <textarea
@@ -54,10 +60,13 @@ export function Note({
         value={content}
         onChange={(event) => {
           setContent(event.target.value);
+          setIsModified(true); // Marquer la note comme modifiée lors de la saisie dans le champ de contenu
+          setIsSaved(false); // Réinitialiser le statut de sauvegarde lors de la modification
         }}
       />
       <div className="Note-actions">
         <Button>Enregistrer</Button>
+        {isSaved && <p>Enregistré</p>} {/* Afficher "Enregistré" si la note est récemment enregistrée */}
       </div>
     </form>
   );
