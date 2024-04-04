@@ -1,6 +1,7 @@
 import "./App.css";
 import { useEffect, useState } from "react";
 import { Button } from "./components/Button/Button";
+import { Note } from "./components/Note/Note";
 
 // Cycle de vie du composant App :
 // Initialement : `notes` vaut `null`, donc pas d'affichage dans le header
@@ -40,7 +41,8 @@ function App() {
     fetchNotes();
   }, []);
 
-  console.log({ selectedNoteId });
+  const selectedNote =
+    notes && notes.find((note) => note.id === selectedNoteId);
 
   return (
     <>
@@ -64,7 +66,15 @@ function App() {
               </button>
             ))}
       </aside>
-      <main className="Main"></main>
+      <main className="Main">
+        {selectedNote ? (
+          <Note
+            id={selectedNote.id}
+            title={selectedNote.title}
+            content={selectedNote.content}
+          />
+        ) : null}
+      </main>
     </>
   );
 }
