@@ -2,6 +2,7 @@ import "./App.css";
 import { useEffect, useState } from "react";
 import { Button } from "./components/Button/Button";
 import { Note } from "./components/Note/Note";
+import { Loading } from "./components/Loading/Loading";
 
 // Cycle de vie du composant App :
 // Initialement : `notes` vaut `null`, donc pas d'affichage dans le header
@@ -58,21 +59,25 @@ function App() {
         <div className="Create-note-wrapper">
           <Button onClick={createNote}>+ Create new note</Button>
         </div>
-        {isLoading
-          ? "Chargement…"
-          : notes?.map((note) => (
-              <button
-                className={`Note-button ${
-                  selectedNoteId === note.id ? "Note-button-selected" : ""
-                }`}
-                key={note.id}
-                onClick={() => {
-                  setSelectedNoteId(note.id);
-                }}
-              >
-                {note.title}
-              </button>
-            ))}
+        {isLoading ? (
+          <div className="Loading-wrapper">
+            <Loading />
+          </div>
+        ) : (
+          notes?.map((note) => (
+            <button
+              className={`Note-button ${
+                selectedNoteId === note.id ? "Note-button-selected" : ""
+              }`}
+              key={note.id}
+              onClick={() => {
+                setSelectedNoteId(note.id);
+              }}
+            >
+              {note.title}
+            </button>
+          ))
+        )}
       </aside>
       <main className="Main">
         {selectedNote ? (

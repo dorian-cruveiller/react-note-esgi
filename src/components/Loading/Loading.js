@@ -1,3 +1,5 @@
+import "./Loading.css";
+
 export function Loading() {
   return (
     <div class="lds-ring">
