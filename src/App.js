@@ -12,14 +12,13 @@ function App() {
   const [searchQuery, setSearchQuery] = useState("");
   const [isDarkMode, setIsDarkMode] = useState(true);
   const [page, setPage] = useState(1);
-  const [error, setError] = useState(null); // État pour suivre les erreurs
-  const [userName, setUserName] = useState(""); // État pour stocker le nom de l'utilisateur
+  const [error, setError] = useState(null); 
+  const [userName, setUserName] = useState(""); 
   const [checkedNotes, setCheckedNotes] = useState([]);
 
   useEffect(() => {
     fetchNotes();
-    fetchUserName(); // Appel de la fonction pour récupérer le nom de l'utilisateur
-    // eslint-disable-next-line react-hooks/exhaustive-deps
+    fetchUserName(); 
   }, [page]);
 
   const fetchUserName = async () => {
@@ -124,7 +123,6 @@ function App() {
         .map((note) => note.id);
       setCheckedNotes(checkedNoteIds);
   
-      // Mettre à jour la note côté serveur
       const response = await fetch(`/notes/${id}`, {
         method: "PUT",
         headers: {
@@ -132,6 +130,30 @@ function App() {
         },
         body: JSON.stringify(updatedNotes.find((note) => note.id === id)),
       });
+      if (!response.ok) {
+        throw new Error("Erreur lors de la mise à jour de l'état de la note");
+      }
+    } catch (error) {
+      setError(error.message);
+    }
+  };
+
+  const handlePinNote = async (id) => {
+
+    try {
+      const updatedNotes = notes.map((note) =>
+        note.id === id ? { ...note, isPinned: !note.isPinned } : note
+      );
+      setNotes(updatedNotes);
+
+      const response = await fetch(`/notes/${id}`, {
+        method: "PUT",
+        headers: {
+          "Content-Type": "application/json",
+        },
+        body: JSON.stringify(updatedNotes.find((note) => note.id === id)),
+      });
+
       if (!response.ok) {
         throw new Error("Erreur lors de la mise à jour de l'état de la note");
       }
@@ -177,25 +199,67 @@ function App() {
             <Loading />
           </div>
         ) : (
-          filteredNotes.map((note) => (
-            <div key={note.id} className="Note-button-container">
-              <button
-                className={`Note-button ${selectedNoteId === note.id ? "Note-button-selected" : ""}`}
-                onClick={() => {
-                  setSelectedNoteId(note.id);
-                }}
-              >
-                {note.title}
-              </button>
-              <input
-                type="checkbox"
-                checked={note.isChecked}
-                onChange={() => toggleNoteCheckedState(note.id)}
-              />
-            </div>
-          ))
+          <div>
+            <h3>Epinglé</h3>
+            {filteredNotes
+              .filter((note) => note.isPinned)
+              .map((note) => (
+                <div key={note.id} className="Note-button-container">
+                  <div className="Note-details">
+                    <button
+                      className={`Note-button ${
+                        selectedNoteId === note.id ? "Note-button-selected" : ""
+                      }`}
+                      onClick={() => setSelectedNoteId(note.id)}
+                    >
+                      {note.title}
+                    </button>
+                  </div>
+                  <button
+                    className="Pin-button"
+                    onClick={() => handlePinNote(note.id)}
+                  >
+                    Détacher
+                  </button>
+                  <input
+                    type="checkbox"
+                    checked={note.isChecked}
+                    onChange={() => toggleNoteCheckedState(note.id)}
+                  />
+                </div>
+              ))}
+            <h3>Notes</h3>
+            {filteredNotes
+              .filter((note) => !note.isPinned)
+              .map((note) => (
+                <div key={note.id} className="Note-button-container">
+                  <div className="Note-details">
+                    <button
+                      className={`Note-button ${
+                        selectedNoteId === note.id ? "Note-button-selected" : ""
+                      }`}
+                      onClick={() => setSelectedNoteId(note.id)}
+                    >
+                      {note.title}
+                    </button>
+                  </div>
+                  <button
+                    className="Pin-button"
+                    onClick={() => handlePinNote(note.id)}
+                  >
+                    Épingler
+                  </button>
+                  <input
+                    type="checkbox"
+                    checked={note.isChecked}
+                    onChange={() => toggleNoteCheckedState(note.id)}
+                  />
+                </div>
+              ))}
+          </div>
         )}
-        {error && <p className="Error-message">{error}</p>} {/* Afficher le message d'erreur s'il y en a */}
+
+        {error && <p className="Error-message">{error}</p>}
         <div className="Load-more-wrapper">
           {filteredNotes.length === 10 * page && (
             <Button onClick={loadMoreNotes}>Voir plus</Button>
@@ -203,13 +267,14 @@ function App() {
         </div>
       </aside>
       <main className="Main">
-      <p className="username">Nom de l'utilisateur : {userName}</p>
+        <p className="username">Nom de l'utilisateur : {userName}</p>
         {selectedNote ? (
           <Note
             id={selectedNote.id}
             title={selectedNote.title}
             content={selectedNote.content}
             isChecked={selectedNote.isChecked}
+            isPinned={selectedNote.isPinned}
             onSubmit={refreshNote}
             onDelete={deleteNote}
           />

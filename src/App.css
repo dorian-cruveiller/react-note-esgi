@@ -79,3 +79,7 @@
 .username {
   margin-left: 20px;
 }
+
+.Pin-button {
+  display: flex;
+}
