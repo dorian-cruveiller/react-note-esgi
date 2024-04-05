@@ -13,6 +13,26 @@ function App() {
   const [isDarkMode, setIsDarkMode] = useState(true);
   const [page, setPage] = useState(1);
   const [error, setError] = useState(null); // État pour suivre les erreurs
+  const [userName, setUserName] = useState(""); // État pour stocker le nom de l'utilisateur
+
+  useEffect(() => {
+    fetchNotes();
+    fetchUserName(); // Appel de la fonction pour récupérer le nom de l'utilisateur
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [page]);
+
+  const fetchUserName = async () => {
+    try {
+      const response = await fetch("http://localhost:4000/profile");
+      if (!response.ok) {
+        throw new Error("Erreur lors de la récupération du nom de l'utilisateur");
+      }
+      const userData = await response.json();
+      setUserName(userData.name);
+    } catch (error) {
+      setError(error.message);
+    }
+  };
 
   const fetchNotes = async () => {
     try {
@@ -67,11 +87,6 @@ function App() {
       setError(error.message);
     }
   };
-
-  useEffect(() => {
-    fetchNotes();
-    // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [page]);
 
   const refreshNote = (id, { title, content, lastUpdatedAt }) => {
     setNotes(
@@ -155,6 +170,7 @@ function App() {
         </div>
       </aside>
       <main className="Main">
+      <p className="username">Nom de l'utilisateur : {userName}</p>
         {selectedNote ? (
           <Note
             id={selectedNote.id}
