@@ -13,6 +13,7 @@ export function Note({
   const [content, setContent] = useState(initialContent);
   const [isModified, setIsModified] = useState(false);
   const [isSaved, setIsSaved] = useState(false); // Nouvel état pour suivre si la note a été récemment enregistrée
+  const [error, setError] = useState(null); // État pour suivre les erreurs
 
   useEffect(() => {
     setTitle(initialTitle);
@@ -20,32 +21,40 @@ export function Note({
   }, [id, initialTitle, initialContent]);
 
   const updateNote = async () => {
-    const response = await fetch(`/notes/${id}`, {
-      method: "PUT",
-      headers: {
-        "Content-Type": "application/json",
-      },
-      body: JSON.stringify({
-        title,
-        content,
-        lastUpdatedAt: new Date(),
-      }),
-    });
+    try {
+      const response = await fetch(`/notes/${id}`, {
+        method: "PUT",
+        headers: {
+          "Content-Type": "application/json",
+        },
+        body: JSON.stringify({
+          title,
+          content,
+          lastUpdatedAt: new Date(),
+        }),
+      });
 
-    if (response.status === 404) {
-      return;
+      if (!response.ok) {
+        throw new Error("Erreur lors de la mise à jour de la note");
+      }
+
+      const updatedNote = await response.json();
+      onSubmit(id, updatedNote);
+      setIsSaved(true); // Marquer la note comme récemment enregistrée après la mise à jour
+      setIsModified(false); // Réinitialiser le statut de modification après l'enregistrement
+    } catch (error) {
+      setError(error.message);
     }
-
-    const updatedNote = await response.json();
-    onSubmit(id, updatedNote);
-    setIsSaved(true); // Marquer la note comme récemment enregistrée après la mise à jour
-    setIsModified(false); // Réinitialiser le statut de modification après l'enregistrement
   };
 
-  const handleDeleteNote = () => {
-    const confirmDelete = window.confirm("Êtes-vous sûr de vouloir supprimer cette note ?");
-    if (confirmDelete) {
-      onDelete(id); // Appeler la fonction onDelete avec l'ID de la note
+  const handleDeleteNote = async () => {
+    try {
+      const confirmDelete = window.confirm("Êtes-vous sûr de vouloir supprimer cette note ?");
+      if (confirmDelete) {
+        await onDelete(id); // Appeler la fonction onDelete avec l'ID de la note
+      }
+    } catch (error) {
+      setError(error.message);
     }
   };
 
@@ -80,6 +89,7 @@ export function Note({
         <Button>Enregistrer</Button>
         {isSaved && <p>Enregistré</p>} {/* Afficher "Enregistré" si la note est récemment enregistrée */}
         <Button onClick={handleDeleteNote}>Supprimer</Button>
+        {error && <p className="Error-message">{error}</p>} {/* Afficher le message d'erreur s'il y en a */}
       </div>
     </form>
   );

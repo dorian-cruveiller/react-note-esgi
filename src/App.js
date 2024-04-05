@@ -12,39 +12,59 @@ function App() {
   const [searchQuery, setSearchQuery] = useState("");
   const [isDarkMode, setIsDarkMode] = useState(true);
   const [page, setPage] = useState(1);
+  const [error, setError] = useState(null); // État pour suivre les erreurs
 
   const fetchNotes = async () => {
-    console.log(page)
-    const response = await fetch(`/notes?_page=${page}`);
-    const data = await response.json();
-    setNotes([...notes, ...data.data]);
-    setIsLoading(false);
+    try {
+      const response = await fetch(`/notes?_page=${page}`);
+      if (!response.ok) {
+        throw new Error("Erreur lors du chargement des notes");
+      }
+      const data = await response.json();
+      setNotes([...notes, ...data.data]);
+      setIsLoading(false);
+    } catch (error) {
+      setError(error.message);
+      setIsLoading(false);
+    }
   };
 
   const createNote = async () => {
-    const response = await fetch("/notes", {
-      method: "POST",
-      headers: {
-        "Content-Type": "application/json",
-      },
-      body: JSON.stringify({
-        title: "Nouvelle note",
-        content: "",
-        lastUpdatedAt: new Date(),
-      }),
-    });
-    const newNote = await response.json();
-    setNotes([newNote, ...notes]);
-    setNewNoteId(newNote.id);
+    try {
+      const response = await fetch("/notes", {
+        method: "POST",
+        headers: {
+          "Content-Type": "application/json",
+        },
+        body: JSON.stringify({
+          title: "Nouvelle note",
+          content: "",
+          lastUpdatedAt: new Date(),
+        }),
+      });
+      if (!response.ok) {
+        throw new Error("Erreur lors de la création d'une note");
+      }
+      const newNote = await response.json();
+      setNotes([newNote, ...notes]);
+      setNewNoteId(newNote.id);
+    } catch (error) {
+      setError(error.message);
+    }
   };
 
   const deleteNote = async (id) => {
-    const response = await fetch(`/notes/${id}`, {
-      method: "DELETE",
-    });
-    if (response.ok) {
+    try {
+      const response = await fetch(`/notes/${id}`, {
+        method: "DELETE",
+      });
+      if (!response.ok) {
+        throw new Error("Erreur lors de la suppression de la note");
+      }
       setNotes(notes.filter((note) => note.id !== id));
       if (selectedNoteId === id) setSelectedNoteId(null);
+    } catch (error) {
+      setError(error.message);
     }
   };
 
@@ -127,8 +147,9 @@ function App() {
             </div>
           ))
         )}
+        {error && <p className="Error-message">{error}</p>} {/* Afficher le message d'erreur s'il y en a */}
         <div className="Load-more-wrapper">
-          {filteredNotes.length === (10 * page) && (
+          {filteredNotes.length === 10 * page && (
             <Button onClick={loadMoreNotes}>Voir plus</Button>
           )}
         </div>
