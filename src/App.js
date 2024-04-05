@@ -1,4 +1,3 @@
-// App.js
 import "./App.css";
 import { useEffect, useState } from "react";
 import { Button } from "./components/Button/Button";
@@ -11,6 +10,7 @@ function App() {
   const [selectedNoteId, setSelectedNoteId] = useState(null);
   const [newNoteId, setNewNoteId] = useState(null);
   const [searchQuery, setSearchQuery] = useState("");
+  const [isDarkMode, setIsDarkMode] = useState(true);
 
   const fetchNotes = async () => {
     const response = await fetch("/notes");
@@ -76,9 +76,14 @@ function App() {
         .sort((a, b) => new Date(b.lastUpdatedAt) - new Date(a.lastUpdatedAt))
     : [];
 
+  // Fonction pour basculer entre les thèmes jour et nuit
+  const toggleDarkMode = () => {
+    setIsDarkMode(!isDarkMode);
+  };
+
   return (
-    <>
-      <aside className="Side">
+    <div className={`App ${!isDarkMode ? "light-mode" : ""}`}>
+      <aside className={`Side ${!isDarkMode ? "Side-dark" : ""}`}>
         <div className="Create-note-wrapper">
           <Button onClick={createNote}>+ Create new note</Button>
         </div>
@@ -126,11 +131,16 @@ function App() {
             title={selectedNote.title}
             content={selectedNote.content}
             onSubmit={refreshNote}
-            onDelete={deleteNote} // Passer la fonction deleteNote à la prop onDelete
+            onDelete={deleteNote}
           />
         ) : null}
       </main>
-    </>
+      <div className="theme-switch">
+        <Button onClick={toggleDarkMode}>
+          {isDarkMode ? "Switch to Light Mode" : "Switch to Dark Mode"}
+        </Button>
+      </div>
+    </div>
   );
 }
 
