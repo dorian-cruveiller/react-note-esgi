@@ -14,6 +14,7 @@ function App() {
   const [page, setPage] = useState(1);
   const [error, setError] = useState(null); // État pour suivre les erreurs
   const [userName, setUserName] = useState(""); // État pour stocker le nom de l'utilisateur
+  const [checkedNotes, setCheckedNotes] = useState([]);
 
   useEffect(() => {
     fetchNotes();
@@ -41,7 +42,8 @@ function App() {
         throw new Error("Erreur lors du chargement des notes");
       }
       const data = await response.json();
-      setNotes([...notes, ...data.data]);
+      const notesWithCheckedState = data.data.map(note => ({ ...note }));
+      setNotes([...notes, ...notesWithCheckedState]);
       setIsLoading(false);
     } catch (error) {
       setError(error.message);
@@ -102,6 +104,42 @@ function App() {
     }
   }, [newNoteId]);
 
+  const toggleDarkMode = () => {
+    setIsDarkMode(!isDarkMode);
+  };
+
+  const loadMoreNotes = () => {
+    setPage(page + 1);
+  };
+
+  const toggleNoteCheckedState = async (id) => {
+    try {
+      const updatedNotes = notes.map((note) =>
+        note.id === id ? { ...note, isChecked: !note.isChecked } : note
+      );
+      setNotes(updatedNotes);
+  
+      const checkedNoteIds = updatedNotes
+        .filter((note) => note.isChecked)
+        .map((note) => note.id);
+      setCheckedNotes(checkedNoteIds);
+  
+      // Mettre à jour la note côté serveur
+      const response = await fetch(`/notes/${id}`, {
+        method: "PUT",
+        headers: {
+          "Content-Type": "application/json",
+        },
+        body: JSON.stringify(updatedNotes.find((note) => note.id === id)),
+      });
+      if (!response.ok) {
+        throw new Error("Erreur lors de la mise à jour de l'état de la note");
+      }
+    } catch (error) {
+      setError(error.message);
+    }
+  };
+
   const selectedNote = notes.find((note) => note.id === selectedNoteId);
 
   const filteredNotes = notes
@@ -111,14 +149,6 @@ function App() {
         note.content.toLowerCase().includes(searchQuery.toLowerCase())
     )
     .sort((a, b) => new Date(b.lastUpdatedAt) - new Date(a.lastUpdatedAt));
-
-  const toggleDarkMode = () => {
-    setIsDarkMode(!isDarkMode);
-  };
-
-  const loadMoreNotes = () => {
-    setPage(page + 1);
-  };
 
   return (
     <div className={`App ${!isDarkMode ? "light-mode" : ""}`}>
@@ -150,15 +180,18 @@ function App() {
           filteredNotes.map((note) => (
             <div key={note.id} className="Note-button-container">
               <button
-                className={`Note-button ${
-                  selectedNoteId === note.id ? "Note-button-selected" : ""
-                }`}
+                className={`Note-button ${selectedNoteId === note.id ? "Note-button-selected" : ""}`}
                 onClick={() => {
                   setSelectedNoteId(note.id);
                 }}
               >
                 {note.title}
               </button>
+              <input
+                type="checkbox"
+                checked={note.isChecked}
+                onChange={() => toggleNoteCheckedState(note.id)}
+              />
             </div>
           ))
         )}
@@ -176,6 +209,7 @@ function App() {
             id={selectedNote.id}
             title={selectedNote.title}
             content={selectedNote.content}
+            isChecked={selectedNote.isChecked}
             onSubmit={refreshNote}
             onDelete={deleteNote}
           />

@@ -7,6 +7,7 @@ export function Note({
   id,
   title: initialTitle,
   content: initialContent,
+  isChecked,
   onSubmit,
   onDelete,
 }) {
@@ -43,6 +44,7 @@ export function Note({
           title,
           content,
           lastUpdatedAt: new Date(),
+          isChecked: isChecked
         }),
       });
 
