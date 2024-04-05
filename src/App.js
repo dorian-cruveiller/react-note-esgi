@@ -6,16 +6,18 @@ import { Loading } from "./components/Loading/Loading";
 
 function App() {
   const [isLoading, setIsLoading] = useState(true);
-  const [notes, setNotes] = useState(null);
+  const [notes, setNotes] = useState([]);
   const [selectedNoteId, setSelectedNoteId] = useState(null);
   const [newNoteId, setNewNoteId] = useState(null);
   const [searchQuery, setSearchQuery] = useState("");
   const [isDarkMode, setIsDarkMode] = useState(true);
+  const [page, setPage] = useState(1);
 
   const fetchNotes = async () => {
-    const response = await fetch("/notes");
+    console.log(page)
+    const response = await fetch(`/notes?_page=${page}`);
     const data = await response.json();
-    setNotes(data);
+    setNotes([...notes, ...data.data]);
     setIsLoading(false);
   };
 
@@ -48,7 +50,8 @@ function App() {
 
   useEffect(() => {
     fetchNotes();
-  }, []);
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [page]);
 
   const refreshNote = (id, { title, content, lastUpdatedAt }) => {
     setNotes(
@@ -64,21 +67,22 @@ function App() {
     }
   }, [newNoteId]);
 
-  const selectedNote = notes && notes.find((note) => note.id === selectedNoteId);
+  const selectedNote = notes.find((note) => note.id === selectedNoteId);
 
   const filteredNotes = notes
-    ? notes
-        .filter(
-          (note) =>
-            note.title.toLowerCase().includes(searchQuery.toLowerCase()) ||
-            note.content.toLowerCase().includes(searchQuery.toLowerCase())
-        )
-        .sort((a, b) => new Date(b.lastUpdatedAt) - new Date(a.lastUpdatedAt))
-    : [];
+    .filter(
+      (note) =>
+        note.title.toLowerCase().includes(searchQuery.toLowerCase()) ||
+        note.content.toLowerCase().includes(searchQuery.toLowerCase())
+    )
+    .sort((a, b) => new Date(b.lastUpdatedAt) - new Date(a.lastUpdatedAt));
 
-  // Fonction pour basculer entre les thèmes jour et nuit
   const toggleDarkMode = () => {
     setIsDarkMode(!isDarkMode);
+  };
+
+  const loadMoreNotes = () => {
+    setPage(page + 1);
   };
 
   return (
@@ -123,6 +127,11 @@ function App() {
             </div>
           ))
         )}
+        <div className="Load-more-wrapper">
+          {filteredNotes.length === (10 * page) && (
+            <Button onClick={loadMoreNotes}>Voir plus</Button>
+          )}
+        </div>
       </aside>
       <main className="Main">
         {selectedNote ? (
