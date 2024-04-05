@@ -1,26 +1,38 @@
 import { useEffect, useState } from "react";
 import { Button } from "../Button/Button";
 import "./Note.css";
+import { useDebouncedEffect } from "../../hooks/useDebouncedEffect"; // Importer le hook personnalisé
 
 export function Note({
   id,
   title: initialTitle,
   content: initialContent,
   onSubmit,
-  onDelete, // Ajout de la fonction onDelete pour supprimer la note
+  onDelete,
 }) {
   const [title, setTitle] = useState(initialTitle);
   const [content, setContent] = useState(initialContent);
   const [isModified, setIsModified] = useState(false);
-  const [isSaved, setIsSaved] = useState(false); // Nouvel état pour suivre si la note a été récemment enregistrée
-  const [error, setError] = useState(null); // État pour suivre les erreurs
+  const [isSaved, setIsSaved] = useState(false);
+  const [error, setError] = useState(null);
 
   useEffect(() => {
     setTitle(initialTitle);
     setContent(initialContent);
   }, [id, initialTitle, initialContent]);
 
-  const updateNote = async () => {
+  // Utiliser le hook personnalisé pour la sauvegarde automatique des modifications
+  useDebouncedEffect(
+    () => {
+      if (isModified) {
+        saveNote();
+      }
+    },
+    [title, content, isModified], // Dépendances à surveiller
+    1000 // Délai de 1 seconde
+  );
+
+  const saveNote = async () => {
     try {
       const response = await fetch(`/notes/${id}`, {
         method: "PUT",
@@ -35,13 +47,14 @@ export function Note({
       });
 
       if (!response.ok) {
-        throw new Error("Erreur lors de la mise à jour de la note");
+        throw new Error("Erreur lors de la sauvegarde de la note");
       }
 
       const updatedNote = await response.json();
       onSubmit(id, updatedNote);
-      setIsSaved(true); // Marquer la note comme récemment enregistrée après la mise à jour
-      setIsModified(false); // Réinitialiser le statut de modification après l'enregistrement
+      setIsSaved(true);
+      setIsModified(false);
+      setError(null);
     } catch (error) {
       setError(error.message);
     }
@@ -51,7 +64,7 @@ export function Note({
     try {
       const confirmDelete = window.confirm("Êtes-vous sûr de vouloir supprimer cette note ?");
       if (confirmDelete) {
-        await onDelete(id); // Appeler la fonction onDelete avec l'ID de la note
+        await onDelete(id);
       }
     } catch (error) {
       setError(error.message);
@@ -63,7 +76,7 @@ export function Note({
       className="Form"
       onSubmit={(event) => {
         event.preventDefault();
-        updateNote();
+        saveNote(); // Sauvegarde manuelle au cas où l'utilisateur soumettrait le formulaire
       }}
     >
       <input
@@ -72,8 +85,8 @@ export function Note({
         value={title}
         onChange={(event) => {
           setTitle(event.target.value);
-          setIsModified(true); // Marquer la note comme modifiée lors de la saisie dans le champ de titre
-          setIsSaved(false); // Réinitialiser le statut de sauvegarde lors de la modification
+          setIsModified(true);
+          setIsSaved(false);
         }}
       />
       <textarea
@@ -81,15 +94,15 @@ export function Note({
         value={content}
         onChange={(event) => {
           setContent(event.target.value);
-          setIsModified(true); // Marquer la note comme modifiée lors de la saisie dans le champ de contenu
-          setIsSaved(false); // Réinitialiser le statut de sauvegarde lors de la modification
+          setIsModified(true);
+          setIsSaved(false);
         }}
       />
       <div className="Note-actions">
         <Button>Enregistrer</Button>
-        {isSaved && <p>Enregistré</p>} {/* Afficher "Enregistré" si la note est récemment enregistrée */}
+        {isSaved && <p>Enregistré</p>}
         <Button onClick={handleDeleteNote}>Supprimer</Button>
-        {error && <p className="Error-message">{error}</p>} {/* Afficher le message d'erreur s'il y en a */}
+        {error && <p className="Error-message">{error}</p>}
       </div>
     </form>
   );
